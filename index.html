@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>D.A.V.E</title>
+<meta name="theme-color" content="#020914"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<script>window.__PHONE=true;</script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020914; --panel:rgba(4,22,40,.72); --line:rgba(0,229,255,.28);
+  --accent:#00e5ff; --accent-rgb:0,229,255; --ok:#26e6a0; --warn:#ffb020; --bad:#ff4d5e; --txt:#cfefff; --dim:#6d8fa5;
+}
+html[data-mode="serious"]{ --accent:#ff7a2f; --accent-rgb:255,122,47; --line:rgba(255,122,47,.32); --txt:#ffe7d6; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Rajdhani','Segoe UI',system-ui,sans-serif;overflow:hidden}
+body{background:
+  radial-gradient(1200px 700px at 50% 45%, rgba(var(--accent-rgb),.10), transparent 60%),
+  radial-gradient(900px 600px at 85% 90%, rgba(40,90,255,.10), transparent 60%), var(--bg);}
+#stars{position:fixed;inset:0;z-index:0}
+.app{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:10px;padding:12px 16px 10px}
+.orb{font-family:'Orbitron',sans-serif;letter-spacing:.14em}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:34px;height:34px;border-radius:50%;border:2px solid var(--accent);box-shadow:0 0 14px rgba(var(--accent-rgb),.7), inset 0 0 10px rgba(var(--accent-rgb),.5);position:relative}
+.brand .logo::after{content:"";position:absolute;inset:7px;border-radius:50%;border:1px dashed var(--accent);animation:spin 6s linear infinite}
+.brand h1{font-size:20px;font-weight:700;text-shadow:0 0 12px rgba(var(--accent-rgb),.8)}
+.chip{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.14em;padding:5px 12px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--accent);white-space:nowrap}
+.chip.work{color:var(--warn);border-color:rgba(255,176,32,.5)}
+.chip.off{color:var(--dim)}
+.clock{text-align:right;line-height:1.1}
+.clock .t{font-family:'Orbitron',sans-serif;font-size:22px;color:var(--accent);text-shadow:0 0 10px rgba(var(--accent-rgb),.6)}
+.clock .d{font-size:13px;color:var(--dim);letter-spacing:.08em}
+
+/* ---------- layout ---------- */
+main{display:grid;grid-template-columns:minmax(230px,290px) 1fr minmax(280px,360px);gap:14px;min-height:0}
+.col{display:flex;flex-direction:column;gap:12px;min-height:0}
+.panel{position:relative;background:var(--panel);border:1px solid var(--line);padding:12px 14px;backdrop-filter:blur(3px);
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px));box-shadow:0 0 22px rgba(var(--accent-rgb),.07) inset}
+.panel h3{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.2em;color:var(--accent);margin-bottom:9px;font-weight:500;display:flex;justify-content:space-between}
+.mod{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;margin-bottom:6px;border:1px solid var(--line);background:rgba(0,12,24,.55)}
+.mod b{font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:.14em;font-weight:500}
+.mod span{font-size:13px;display:flex;align-items:center;gap:6px;color:var(--ok)}
+.mod span::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor}
+.mod.warn span{color:var(--warn)} .mod.bad span{color:var(--bad)} .mod.off span{color:var(--dim)}
+.meter{margin:7px 0}
+.meter .l{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);letter-spacing:.1em}
+.meter .bar{height:6px;background:rgba(var(--accent-rgb),.12);margin-top:3px;overflow:hidden}
+.meter .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,rgba(var(--accent-rgb),.4),var(--accent));box-shadow:0 0 8px var(--accent);transition:width .6s}
+.big{font-family:'Orbitron',sans-serif;font-size:26px;color:var(--accent);text-shadow:0 0 10px rgba(var(--accent-rgb),.6)}
+.sub{font-size:14px;color:var(--txt);margin-top:3px}
+.dim{color:var(--dim)}
+
+/* ---------- centre ---------- */
+.center{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+#ring{width:min(100%,62vh);aspect-ratio:1/1;max-height:100%}
+.core{position:absolute;top:calc(50% - 4vh);left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
+.core .name{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(22px,3.6vh,38px);letter-spacing:.3em;color:#e9fbff;text-shadow:0 0 18px var(--accent),0 0 40px rgba(var(--accent-rgb),.7);margin-left:.3em}
+.core .state{font-family:'Orbitron',sans-serif;font-size:clamp(10px,1.5vh,13px);letter-spacing:.35em;color:var(--accent);margin-top:8px}
+.speech{width:min(92%,760px);text-align:center;min-height:3.2em;margin-top:2px}
+.speech .dave{font-size:clamp(17px,2.6vh,24px);line-height:1.25;color:#eaffff;text-shadow:0 0 12px rgba(var(--accent-rgb),.5)}
+.speech .you{font-size:14px;color:var(--dim);margin-top:4px;letter-spacing:.04em;min-height:1.2em}
+
+/* ---------- right ---------- */
+#globe{width:100%;aspect-ratio:1/1;max-height:38vh;display:block;margin:0 auto}
+.news{flex:1;min-height:0;display:flex;flex-direction:column}
+.tabs{display:flex;gap:6px;margin-bottom:8px}
+.tab{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:.16em;padding:4px 10px;border:1px solid var(--line);color:var(--dim);cursor:default}
+.tab.on{color:var(--accent);border-color:var(--accent);box-shadow:0 0 8px rgba(var(--accent-rgb),.4)}
+.list{overflow-y:auto;scroll-behavior:smooth;flex:1;min-height:0;scrollbar-width:none}
+.list::-webkit-scrollbar{display:none}
+.hl{padding:8px 8px 8px 10px;border-left:2px solid rgba(var(--accent-rgb),.25);margin-bottom:6px;font-size:15px;line-height:1.2;opacity:.65;transition:.3s}
+.hl small{display:block;color:var(--dim);font-size:11px;letter-spacing:.1em;margin-top:2px}
+.hl.on{opacity:1;border-left-color:var(--accent);background:rgba(var(--accent-rgb),.10);box-shadow:0 0 14px rgba(var(--accent-rgb),.18)}
+.sec{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:.2em;color:var(--accent);margin:8px 0 5px}
+
+/* ---------- footer log ---------- */
+footer{display:flex;gap:14px;align-items:flex-end;min-height:44px}
+#log{flex:1;font-size:13px;line-height:1.35;max-height:62px;overflow:hidden;color:var(--dim)}
+#log div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#log .DAVE b{color:var(--accent)} #log .YOU b{color:var(--ok)} #log .IGNORED{opacity:.55} #log .ERROR b{color:var(--bad)}
+#toast{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);padding:8px 16px;background:var(--panel);border:1px solid var(--warn);color:var(--warn);font-size:14px;letter-spacing:.06em;opacity:0;transition:.4s;z-index:5;max-width:90vw}
+#toast.on{opacity:1}
+#notice{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;background:rgba(2,9,20,.92);text-align:center;padding:30px}
+#notice.on{display:flex}
+#notice div{max-width:520px;font-size:20px;line-height:1.4}
+#notice b{display:block;font-family:'Orbitron',sans-serif;color:var(--accent);margin-bottom:14px;letter-spacing:.2em}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (max-width:980px){
+  html,body{overflow:auto}
+  .app{height:auto;min-height:100%;grid-template-columns:minmax(0,1fr);padding:10px 12px}
+  header{flex-wrap:wrap}
+  .brand{flex-wrap:wrap;gap:8px}
+  .brand h1{font-size:17px}
+  .clock .t{font-size:17px}
+  main{grid-template-columns:minmax(0,1fr)}
+  .col,.panel,.center{min-width:0}
+  .center{order:-1} #ring{width:min(96vw,520px)}
+  .core{top:calc(50% - 30px)}
+  #globe{max-height:340px;width:min(100%,340px)}
+  .news{min-height:320px}
+}
+
+#linkbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(66px + env(safe-area-inset-bottom,0px));z-index:6;max-width:92vw}
+#linkbar a{display:block;padding:10px 16px;background:var(--panel);border:1px solid var(--accent);color:var(--accent);text-decoration:none;font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:.08em;box-shadow:0 0 14px rgba(var(--accent-rgb),.4);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#settings{position:fixed;inset:0;z-index:10;background:rgba(2,9,20,.92);display:flex;align-items:center;justify-content:center;padding:20px}
+#settings[hidden]{display:none}
+#settings .box{max-width:420px;width:100%;border:1px solid var(--line);background:var(--panel);padding:18px;display:flex;flex-direction:column;gap:12px;font-size:15px}
+#settings input{background:#000a;border:1px solid var(--line);color:var(--txt);padding:10px;font-size:16px}
+#settings button{flex:1;padding:10px;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:.14em}
+#settings .row{display:flex;gap:10px}
+#diskPanel[style*="none"]{display:none}
+.brand .logo{cursor:pointer}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="app">
+  <header>
+    <div class="brand"><div class="logo"></div><h1 class="orb">D.A.V.E</h1><span id="chipState" class="chip off">ASLEEP</span><span id="chipMode" class="chip">NORMAL MODE</span></div>
+    <div class="clock"><div class="t" id="clk">--:--:--</div><div class="d" id="dte">&nbsp;</div></div>
+  </header>
+
+  <main>
+    <section class="col">
+      <div class="panel">
+        <h3>SYSTEMS <span id="sysTag" class="dim">STANDBY</span></h3>
+        <div class="mod" id="mAI"><b>AI CORE</b><span>Active</span></div>
+        <div class="mod" id="mVoice"><b>VOICE</b><span>Online</span></div>
+        <div class="mod off" id="mMic"><b>MICROPHONE</b><span>Starting</span></div>
+        <div class="mod" id="mNet"><b>INTERNET</b><span>Online</span></div>
+        <div class="mod"><b>MEMORY</b><span>Ready</span></div>
+      </div>
+      <div class="panel" style="display:none">
+        <h3>LAPTOP</h3>
+        <div class="meter"><div class="l"><span>CPU</span><span id="vCpu">0%</span></div><div class="bar"><i id="bCpu"></i></div></div>
+        <div class="meter"><div class="l"><span>MEMORY</span><span id="vRam">0%</span></div><div class="bar"><i id="bRam"></i></div></div>
+        <div class="meter"><div class="l"><span>DISK</span><span id="vDisk">0%</span></div><div class="bar"><i id="bDisk"></i></div></div>
+        <div class="dim" style="font-size:12px;margin-top:6px" id="freeTxt"></div>
+      </div>
+      <div class="panel" id="geoPanel">
+        <h3>LOCATION &amp; WEATHER</h3>
+        <div class="big" id="gTemp">--</div>
+        <div class="sub" id="gCity">Locating...</div>
+        <div class="dim" id="gDesc" style="font-size:13px;margin-top:4px"></div>
+      </div>
+      <div class="panel" id="diskPanel" style="display:none">
+        <h3>SCHEDULE</h3><div id="diskList" style="font-size:13px;line-height:1.35"></div>
+      </div>
+    </section>
+
+    <section class="center">
+      <canvas id="ring"></canvas>
+      <div class="core"><div class="name">D.A.V.E</div><div class="state" id="stateTxt">ASLEEP</div></div>
+      <div class="speech"><div class="dave" id="saidTxt">Say "hello" to wake me.</div><div class="you" id="heardTxt"></div></div>
+    </section>
+
+    <section class="col">
+      <div class="panel" style="padding:8px 10px">
+        <h3 style="margin-bottom:2px">GLOBAL LINK <span id="gTag" class="dim">SCANNING</span></h3>
+        <canvas id="globe"></canvas>
+      </div>
+      <div class="panel news">
+        <h3>HEADLINES <span id="newsTag" class="dim">STANDBY</span></h3>
+        <div class="list" id="newsList"><div class="dim" style="font-size:14px">Headlines appear here when I wake up.</div></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div id="log"></div></footer>
+</div>
+<div id="linkbar" hidden></div>
+<div id="settings" hidden><div class="box"><b class="orb">SETTINGS</b>
+<p>Conversation brain. Dave talks through a free online model by default. For smarter, faster answers paste an Anthropic API key (stays on this phone only).</p>
+<input id="apikey" type="password" placeholder="sk-ant-... (optional)" autocomplete="off">
+<div class="row"><button id="saveKey">SAVE</button><button id="closeSet">CLOSE</button></div></div></div>
+<div id="toast"></div>
+<div id="notice"><div><b>VOICE LOCKED BY BROWSER</b><span id="noticeTxt">Tap or click anywhere once so the browser lets me speak. After that, never again.</span></div></div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+let CFG = {lang: "en-ZA"};
+let awake = false, mode = "normal", status = "ASLEEP", busy = "";
+let micLevel = 0, speaking = false, speakEndedAt = 0, spokenRecent = [];   // [{t, words:Set}]
+let micOK = false;
+
+/* ===================================================================== starfield */
+(function(){
+  const c=$("stars"), g=c.getContext("2d"); let W,H,st=[];
+  function rs(){W=c.width=innerWidth;H=c.height=innerHeight;st=Array.from({length:150},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.3+.2,a:Math.random()}));}
+  rs(); addEventListener("resize",rs);
+  (function loop(t){g.clearRect(0,0,W,H);for(const s of st){g.fillStyle=`rgba(160,220,255,${.15+.5*Math.abs(Math.sin(t/2000+s.a*6))})`;g.fillRect(s.x,s.y,s.r,s.r);}requestAnimationFrame(loop);})(0);
+})();
+
+/* ===================================================================== clock */
+setInterval(()=>{const d=new Date();$("clk").textContent=d.toLocaleTimeString("en-GB");$("dte").textContent=d.toLocaleDateString("en-GB",{weekday:"short",day:"2-digit",month:"short",year:"numeric"}).toUpperCase();},500);
+
+/* ===================================================================== central ring */
+const ring=$("ring"), rg=ring.getContext("2d");
+let level=0, rot=0;
+function fit(c){const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,1.5),w=Math.max(10,Math.round(r.width*d)),h=Math.max(10,Math.round(r.height*d));if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;}
+function accent(){return getComputedStyle(document.documentElement).getPropertyValue("--accent-rgb").trim()||"0,229,255";}
+function drawRing(t){
+  fit(ring);
+  const W=ring.width,H=ring.height,cx=W/2,cy=H/2,R=Math.min(W,H)/2*.94, A=accent();
+  const power = awake?1:.38, sp = (awake?1:.3);
+  rg.clearRect(0,0,W,H);
+  const target = Math.max(micLevel*(awake?1:.6), speaking?(.35+.3*Math.abs(Math.sin(t/110))*Math.abs(Math.sin(t/37))):0);
+  level += (target-level)*.25;
+  rot += .004*sp;
+  const col=(a)=>`rgba(${A},${a*power})`;
+  rg.lineCap="round";
+  // outer ring + ticks
+  rg.strokeStyle=col(.65); rg.lineWidth=2; rg.beginPath(); rg.arc(cx,cy,R,0,6.283); rg.stroke();
+  rg.lineWidth=1;rg.strokeStyle=col(.35);rg.beginPath();for(let i=0;i<120;i++){if(i%5===0)continue;const a=i/120*6.283+rot*.5,c=Math.cos(a),n=Math.sin(a);rg.moveTo(cx+c*R*.955,cy+n*R*.955);rg.lineTo(cx+c*R*.935,cy+n*R*.935);}rg.stroke();
+  rg.lineWidth=2;rg.strokeStyle=col(.7);rg.beginPath();for(let i=0;i<120;i+=5){const a=i/120*6.283+rot*.5,c=Math.cos(a),n=Math.sin(a);rg.moveTo(cx+c*R*.955,cy+n*R*.955);rg.lineTo(cx+c*R*.91,cy+n*R*.91);}rg.stroke();
+  // rotating segmented arcs
+  const arcs=[[.84,5,1,.9,6],[.77,3,-1.6,.7,9],[.69,7,2.2,.55,4],[.62,2,-1,.45,12]];
+  for(const [r,w,v,al,n] of arcs){
+    rg.strokeStyle=col(al); rg.lineWidth=w;
+    for(let k=0;k<n;k++){const s=rot*v*3+k*6.283/n, len=6.283/n*.6; rg.beginPath(); rg.arc(cx,cy,R*r,s,s+len); rg.stroke();}
+  }
+  // glowing inner discs
+  const gr=rg.createRadialGradient(cx,cy,R*.05,cx,cy,R*.55);
+  gr.addColorStop(0,`rgba(${A},${.30*power+level*.35})`);gr.addColorStop(.7,`rgba(${A},${.07*power})`);gr.addColorStop(1,`rgba(${A},0)`);
+  rg.fillStyle=gr; rg.beginPath(); rg.arc(cx,cy,R*.55,0,6.283); rg.fill();
+  rg.strokeStyle=col(.9); rg.lineWidth=2; rg.beginPath(); rg.arc(cx,cy,R*.5,0,6.283); rg.stroke();
+  rg.setLineDash([4,9]); rg.strokeStyle=col(.6); rg.lineWidth=1.5; rg.beginPath(); rg.arc(cx,cy,R*.44,-rot*2,-rot*2+6.283); rg.stroke(); rg.setLineDash([]);
+  // voice bars (reacts to your mic and to Dave speaking)
+  const N=96; rg.lineWidth=Math.max(2,R*.012); rg.strokeStyle=`rgba(${A},${(.45+.5*level)*power})`; rg.beginPath();
+  for(let i=0;i<N;i++){
+    const a=i/N*6.283+rot*.7, wob=.5+.5*Math.sin(i*.9+t/190)*Math.sin(i*.31-t/330);
+    const len=R*(.025+.2*level*wob+.012*Math.sin(i+t/700)), c=Math.cos(a), n=Math.sin(a);
+    rg.moveTo(cx+c*R*.53,cy+n*R*.53); rg.lineTo(cx+c*(R*.53+len),cy+n*(R*.53+len));
+  }
+  rg.stroke();
+  // status colour dot ring when working
+  if(busy){const s=t/300;rg.strokeStyle="rgba(255,176,32,.9)";rg.lineWidth=4;rg.beginPath();rg.arc(cx,cy,R*.9,s,s+1.1);rg.stroke();rg.beginPath();rg.arc(cx,cy,R*.9,s+3.14,s+4.24);rg.stroke();}
+}
+
+/* ===================================================================== globe */
+const gc=$("globe"), gg=gc.getContext("2d");
+const POLYS=[ // rough offline continents [lon,lat]; replaced by real Natural Earth data when it loads
+ [[-17.5,14.7],[-16.5,19],[-13,27.5],[-9.5,30],[-6,35.8],[10,37.2],[11,33],[20,32],[25,31.8],[32,31.2],[34.5,28],[37,21],[39,15.5],[43,12],[51,12],[48,5],[41,-2],[39,-6],[40.5,-15],[35,-22],[33,-26],[32.5,-28.5],[27,-33.5],[20,-34.8],[18,-32],[14.5,-22.5],[12,-17],[13.5,-11],[12,-5],[9,-1],[9.5,4],[5,5.5],[-2,5],[-8,4.5],[-13,8],[-17,13.5]],
+ [[-9.5,37],[-9,43],[-1.5,43.5],[-4.5,48.5],[2,51],[5,53.5],[8,55],[10,57.5],[12,56],[14,54.5],[20,55],[24,59],[30,60],[28,70],[40,67],[44,68],[60,69],[70,73],[80,73.5],[100,77],[113,74],[130,71],[150,70.5],[170,70],[180,68],[180,65],[170,60],[163,58],[160,54],[156,51],[155,58],[142,59],[137,54],[141,48],[135,43],[130,42.5],[129,37],[126,34.5],[126,38],[122,40],[121,37],[122,31],[120,27],[114,22],[108,21.5],[106,18],[109,12],[105,9],[100,13],[100,8],[103,1.5],[98,8],[98,16],[94,17],[92,22],[87,21.5],[80,15],[77,8],[73,17],[72.5,21],[67,24.5],[61.5,25],[57,25.5],[56.5,27],[51,28],[48,30],[50,26],[52,24],[56,26],[59,22.5],[55,17],[45,13],[43,13],[39,21],[35,28],[34.5,31],[36,36],[30,36.5],[27,37],[26,40],[23,40],[24,37.5],[22,36.5],[19.5,40.5],[13.5,45.5],[12.5,44],[16,41],[18.5,40],[16,38],[12,41.5],[8.5,44.3],[3,43],[0,39],[-2,36.8],[-6,36.2]],
+ [[-168,65.5],[-165,68.5],[-156,71],[-140,69.5],[-128,70],[-115,68],[-95,72],[-90,68],[-82,69],[-80,63],[-93,58],[-92,57],[-85,55],[-80,51.5],[-79,56],[-77,62],[-70,60],[-65,60],[-61,56],[-56,52],[-60,47],[-66,45],[-70,43],[-70,41.5],[-74,40.5],[-76,37],[-76,35],[-81,31],[-80,26],[-82,26],[-83,29.5],[-89,30],[-94,29.5],[-97.5,26],[-97.5,22],[-95,18.5],[-91,19],[-90,21],[-87,21.5],[-88,16],[-84,15.5],[-83.5,11],[-80,9],[-77.5,8.5],[-79,7.5],[-82,8],[-86,11],[-87.5,13],[-92,14.5],[-96,15.8],[-105,20],[-110,27],[-114.5,31.5],[-117,32.5],[-120.5,34.5],[-124,40],[-124,47],[-123,49],[-130,55],[-135,58],[-140,60],[-148,60.5],[-152,59],[-158,56.5],[-162,55],[-158,58.5],[-162,59.5],[-165,61],[-165,64]],
+ [[-77,8.5],[-72,12],[-64,10.5],[-60,8],[-52,5],[-50,0],[-44,-2.5],[-35,-5.5],[-35,-9],[-39,-14],[-39,-18],[-41,-22],[-48,-26],[-48.5,-28],[-53,-34],[-57,-35],[-57,-38],[-62,-39],[-65,-41],[-64,-43],[-67,-46],[-66,-48],[-69,-51],[-68.5,-53],[-71,-54],[-74,-52],[-75,-47],[-73,-42],[-73.5,-37],[-71.5,-30],[-70.5,-18],[-76,-14],[-81,-6],[-80,-2],[-80,1],[-77.5,4]],
+ [[114,-22],[114,-26],[115,-34],[118,-35],[124,-33.5],[131,-31.5],[135,-34.5],[138,-35],[140,-38],[146,-39],[150,-37],[153,-31],[153,-25],[149,-20],[146,-18.5],[145,-14.5],[142.5,-10.7],[141.5,-13],[139,-17],[136,-12],[131,-11.5],[129,-14.8],[125,-14.5],[122,-17],[118,-20]],
+ [[-73,78],[-60,82],[-30,83.5],[-18,80],[-20,74],[-22,70],[-32,68],[-43,60],[-50,64],[-54,69],[-58,75]],
+ [[-180,-71],[-150,-77],[-100,-73],[-60,-64],[-40,-78],[0,-70],[40,-68],[80,-67],[120,-66],[150,-68],[180,-71],[180,-90],[-180,-90]],
+ [[-5,50],[1.5,51],[1.7,53],[-2,56],[-2,58.5],[-5,58.5],[-6,56],[-3,54.5],[-4.5,53.3],[-5,51.5]],
+ [[44,-25],[47,-25],[50,-15],[49,-12],[44,-17]],
+ [[130,31],[132,34],[136,34],[140,35],[141.5,38],[142,43],[145,43.5],[141,45.5],[140,41],[139.5,38],[136.5,36.5],[133,35.5],[130,34]],
+ [[109,1],[110,-3],[116,-4],[119,1],[117,7],[113,3]],[[95,5.5],[98,4],[104,-2],[106,-6],[101,-3],[96,2]],
+ [[131,-1],[138,-2],[147,-6],[150,-10],[141,-9],[135,-4]],[[172,-34.5],[178,-38],[175,-41.5],[173,-40]],[[172.5,-40.5],[174,-41.5],[170.5,-46],[167,-46],[169,-43]],
+ [[-24,65],[-14,65.5],[-14,64],[-22,63.5]]
+].map(p=>[p]);               // each "polygon" = list of rings
+let landDots=[],LD=[],LDsrc=null;
+function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;j=i++){const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c;}return c;}
+function buildDots(polys){
+  const out=[], step=3.4;
+  const bbs=polys.map(rs=>{let a=1e9,b=-1e9,c=1e9,d=-1e9;for(const r of rs)for(const[p,q]of r){a=Math.min(a,p);b=Math.max(b,p);c=Math.min(c,q);d=Math.max(d,q);}return[a,b,c,d];});
+  for(let lat=-88;lat<=88;lat+=step){
+    const lonStep=step/Math.max(.25,Math.cos(lat*Math.PI/180));
+    for(let lon=-180;lon<180;lon+=lonStep){
+      for(let k=0;k<polys.length;k++){const bb=bbs[k];if(lon<bb[0]||lon>bb[1]||lat<bb[2]||lat>bb[3])continue;
+        let inside=false;for(const r of polys[k])if(inRing(lon,lat,r))inside=!inside;
+        if(inside){out.push([lat,lon]);break;}}
+    }
+  }
+  return out;
+}
+landDots=buildDots(POLYS);
+(async function loadRealLand(){      // upgrade to real coastlines when online
+  try{
+    const r=await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json",{cache:"force-cache"}); const topo=await r.json();
+    const {scale,translate}=topo.transform;
+    const arcs=topo.arcs.map(a=>{let x=0,y=0;return a.map(([dx,dy])=>{x+=dx;y+=dy;return[x*scale[0]+translate[0],y*scale[1]+translate[1]];});});
+    const ring=idx=>{let pts=[];idx.forEach(i=>{const a=i<0?arcs[~i].slice().reverse():arcs[i];pts=pts.concat(pts.length?a.slice(1):a);});return pts;};
+    const obj=topo.objects.land, geoms=obj.type==="GeometryCollection"?obj.geometries:[obj], polys=[];
+    for(const g of geoms){const list=g.type==="MultiPolygon"?g.arcs:[g.arcs];for(const poly of list)polys.push(poly.map(ring));}
+    if(polys.length>20) landDots=buildDots(polys);
+  }catch(e){}
+})();
+const CITIES=[["JOHANNESBURG",-26.2,28.05,"sa"],["CAPE TOWN",-33.9,18.4],["LONDON",51.5,-0.12],["NEW YORK",40.7,-74],["DUBAI",25.2,55.3],["BEIJING",39.9,116.4],["SYDNEY",-33.9,151.2],["SAO PAULO",-23.5,-46.6],["LAGOS",6.5,3.4],["NAIROBI",-1.3,36.8]];
+let userLoc=null, grot=-0.5, gtarget=null, gspin=.006;
+function proj(lat,lon,R,cx,cy,rotl){
+  const la=lat*Math.PI/180, lo=(lon*Math.PI/180)-rotl, tilt=-.35;
+  let x=Math.cos(la)*Math.sin(lo), y=Math.sin(la), z=Math.cos(la)*Math.cos(lo);
+  const y2=y*Math.cos(tilt)-z*Math.sin(tilt), z2=y*Math.sin(tilt)+z*Math.cos(tilt);
+  return [cx+x*R, cy-y2*R, z2];
+}
+function drawGlobe(t){
+  fit(gc); const W=gc.width,H=gc.height,cx=W/2,cy=H/2,R=Math.min(W,H)/2*.84,A=accent();
+  gg.clearRect(0,0,W,H);
+  if(gtarget!==null){let d=gtarget-grot;d=Math.atan2(Math.sin(d),Math.cos(d));grot+=d*.04;}else grot+=gspin*(awake?1.6:.7);
+  const halo=gg.createRadialGradient(cx,cy,R*.9,cx,cy,R*1.22);halo.addColorStop(0,`rgba(${A},.30)`);halo.addColorStop(1,`rgba(${A},0)`);
+  gg.fillStyle=halo;gg.beginPath();gg.arc(cx,cy,R*1.22,0,6.283);gg.fill();
+  const body=gg.createRadialGradient(cx-R*.3,cy-R*.3,R*.1,cx,cy,R);body.addColorStop(0,`rgba(${A},.14)`);body.addColorStop(1,`rgba(0,10,30,.55)`);
+  gg.fillStyle=body;gg.beginPath();gg.arc(cx,cy,R,0,6.283);gg.fill();
+  gg.strokeStyle=`rgba(${A},.8)`;gg.lineWidth=2;gg.beginPath();gg.arc(cx,cy,R,0,6.283);gg.stroke();
+  // graticule
+  gg.lineWidth=1;
+  for(let lat=-60;lat<=60;lat+=30){gg.strokeStyle=`rgba(${A},.16)`;gg.beginPath();let f=true;for(let lo=-180;lo<=180;lo+=6){const[p,q,z]=proj(lat,lo,R,cx,cy,grot);if(z>0){f?gg.moveTo(p,q):gg.lineTo(p,q);f=false;}else f=true;}gg.stroke();}
+  for(let lo=-180;lo<180;lo+=30){gg.strokeStyle=`rgba(${A},.16)`;gg.beginPath();let f=true;for(let lat=-90;lat<=90;lat+=6){const[p,q,z]=proj(lat,lo,R,cx,cy,grot);if(z>0){f?gg.moveTo(p,q):gg.lineTo(p,q);f=false;}else f=true;}gg.stroke();}
+  // land dots (pre-computed unit vectors; no trig per dot)
+  if(LDsrc!==landDots){LDsrc=landDots;LD=landDots.map(([la,lo])=>{const l=la*Math.PI/180,o=lo*Math.PI/180;return[Math.cos(l),Math.sin(l),Math.sin(o),Math.cos(o)];});}
+  const ds=Math.max(1.4,R*.015),cr=Math.cos(grot),sr=Math.sin(grot),tc=Math.cos(-.35),ts=Math.sin(-.35);
+  const buckets=[[],[],[]];
+  for(const[cl,sl,so,co]of LD){const x=cl*(so*cr-co*sr),z0=cl*(co*cr+so*sr),y0=sl;const y=y0*tc-z0*ts,z=y0*ts+z0*tc;if(z<=0)continue;buckets[z<.35?0:z<.7?1:2].push(cx+x*R,cy-y*R);}
+  [.28,.55,.95].forEach((al,k)=>{gg.fillStyle=`rgba(${A},${al})`;gg.beginPath();const b=buckets[k];for(let i=0;i<b.length;i+=2)gg.rect(b[i]-ds/2,b[i+1]-ds/2,ds,ds);gg.fill();});
+  // links from user's location
+  const here=userLoc||{lat:-26.2,lon:28.05};
+  for(const c of CITIES){ if(Math.abs(c[1]-here.lat)<1&&Math.abs(c[2]-here.lon)<1)continue;
+    const a1=here.lat*Math.PI/180,o1=here.lon*Math.PI/180,a2=c[1]*Math.PI/180,o2=c[2]*Math.PI/180;
+    const d=Math.acos(Math.min(1,Math.max(-1,Math.sin(a1)*Math.sin(a2)+Math.cos(a1)*Math.cos(a2)*Math.cos(o2-o1)))); if(d<.05)continue;
+    gg.strokeStyle=`rgba(${A},.28)`;gg.lineWidth=1;gg.beginPath();let f=true;
+    for(let s=0;s<=1.001;s+=.04){const A1=Math.sin((1-s)*d)/Math.sin(d),B1=Math.sin(s*d)/Math.sin(d);
+      const x=A1*Math.cos(a1)*Math.cos(o1)+B1*Math.cos(a2)*Math.cos(o2),y=A1*Math.cos(a1)*Math.sin(o1)+B1*Math.cos(a2)*Math.sin(o2),zz=A1*Math.sin(a1)+B1*Math.sin(a2);
+      const lat=Math.asin(zz)*180/Math.PI,lon=Math.atan2(y,x)*180/Math.PI,lift=1+.12*Math.sin(Math.PI*s);
+      const[p,q,z]=proj(lat,lon,R*lift,cx,cy,grot);if(z>0){f?gg.moveTo(p,q):gg.lineTo(p,q);f=false;}else f=true;}
+    gg.stroke();}
+  // city markers
+  const all=CITIES.filter(c=>!(userLoc&&Math.abs(c[1]-userLoc.lat)<2&&Math.abs(c[2]-userLoc.lon)<2));if(userLoc)all.unshift(["YOU",userLoc.lat,userLoc.lon,"you"]);
+  gg.font=`${Math.max(9,R*.075)}px Orbitron, sans-serif`;
+  for(const c of all){const[p,q,z]=proj(c[1],c[2],R,cx,cy,grot);if(z<=.05)continue;
+    const hot=c[3]==="sa"||c[3]==="you";const pulse=(Math.sin(t/260)+1)/2;
+    gg.fillStyle=hot?"#ffd24d":`rgba(${A},1)`;gg.beginPath();gg.arc(p,q,hot?R*.03:R*.018,0,6.283);gg.fill();
+    if(hot){gg.strokeStyle=`rgba(255,210,77,${1-pulse})`;gg.lineWidth=2;gg.beginPath();gg.arc(p,q,R*(.03+.07*pulse),0,6.283);gg.stroke();gg.fillStyle="#ffe9a8";gg.fillText(c[0],p+R*.05,q-R*.03);}
+  }
+}
+
+/* ===================================================================== panels */
+function setMod(id,cls,txt){const el=$(id);el.className="mod "+cls;el.querySelector("span").textContent=txt;}
+function applyState(){
+  document.documentElement.dataset.mode=mode;
+  const st = !awake?"ASLEEP":(busy?busy.toUpperCase():(speaking?"SPEAKING":"LISTENING"));
+  $("stateTxt").textContent=st; const ch=$("chipState"); ch.textContent=st; ch.className="chip"+(!awake?" off":busy?" work":"");
+  $("chipMode").textContent=mode==="serious"?"SERIOUS MODE":"NORMAL MODE";
+  $("sysTag").textContent=awake?"ONLINE":"STANDBY";
+  if(!awake && $("saidTxt").dataset.keep!=="1") $("saidTxt").textContent='Say "hello" to wake me.';
+}
+function line(who,text){
+  const d=document.createElement("div");d.className=who;d.innerHTML=`<b>${who}</b> ${String(text).replace(/</g,"&lt;")}`;
+  const L=$("log");L.appendChild(d);while(L.children.length>4)L.removeChild(L.firstChild);
+}
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>el.classList.remove("on"),4500);}
+let HL={sa:[],world:[],extra:[]};
+function renderHeadlines(d){
+  HL={sa:d.sa||[],world:d.world||[],extra:d.extra||[]};
+  const L=$("newsList");L.innerHTML="";
+  const add=(label,key,arr)=>{if(!arr.length)return;const s=document.createElement("div");s.className="sec";s.textContent=label;L.appendChild(s);
+    arr.forEach((h,i)=>{const e=document.createElement("div");e.className="hl";e.id=`hl-${key}-${i}`;e.style.cursor="pointer";e.onclick=()=>{if(h.link)window.open(h.link,"_blank");};e.innerHTML=`${h.title.replace(/</g,"&lt;")}<small>${(h.source||"").toUpperCase()}</small>`;L.appendChild(e);});};
+  add("SOUTH AFRICA","sa",HL.sa);add("WORLD","world",HL.world);add((d.place||"RESULTS").toUpperCase(),"extra",HL.extra);
+  $("newsTag").textContent="LIVE";
+}
+function focusHL(sec,i){
+  document.querySelectorAll(".hl.on").forEach(e=>e.classList.remove("on"));
+  if(i<0){gtarget=null;return;}
+  const e=$(`hl-${sec}-${i}`);if(e){e.classList.add("on");const L=$("newsList");L.scrollTop=e.offsetTop-L.clientHeight/2+e.clientHeight/2-L.offsetTop;}
+  gtarget = sec==="sa" ? (28.05*Math.PI/180) : null;
+  gspin = sec==="world"?.014:.006;
+}
+
+/* ===================================================================== speech OUT */
+let voices=[]; const loadV=()=>{voices=speechSynthesis.getVoices();}; loadV(); speechSynthesis.onvoiceschanged=loadV;
+function pickVoice(){
+  const en=voices.filter(v=>/^en/i.test(v.lang));
+  const male=en.find(v=>/david|mark|guy|ryan|george|james|daniel|male/i.test(v.name)&&!/female|zira|hazel|susan|aria|jenny/i.test(v.name));
+  return male||en.find(v=>v.localService)||en[0]||null;
+}
+const sq=[]; let sBusy=false, lastDone=0, blocked=false;
+function words(s){return (s.toLowerCase().match(/[a-z']+/g)||[]);}
+function chunks(t){const parts=t.match(/[^.!?;:]+[.!?;:]?\s*/g)||[t];const out=[];let cur="";for(const p of parts){if((cur+p).length>170&&cur){out.push(cur);cur=p;}else cur+=p;}if(cur.trim())out.push(cur);return out;}
+function enqueue(m){ if(m.quiet)return; sq.push(m); pump(); }
+function pump(){
+  if(sBusy||!sq.length)return;
+  const m=sq.shift(); sBusy=true; speaking=true; applyState();
+  spokenRecent.push({t:Date.now(),w:new Set(words(m.text))}); if(spokenRecent.length>4)spokenRecent.shift();
+  $("saidTxt").dataset.keep="1"; $("saidTxt").textContent=m.text;
+  const parts=chunks(m.text); let k=0;
+  const next=()=>{
+    if(k>=parts.length){lastDone=m.id;sBusy=false;if(sq.length){pump();}else{speaking=false;speakEndedAt=Date.now();applyState();Brain.onIdle(lastDone);}return;}
+    const u=new SpeechSynthesisUtterance(parts[k++].trim()); const v=pickVoice(); if(v)u.voice=v;
+    if(m.mode==="serious"){u.pitch=.55;u.rate=.84;}else{u.pitch=.95;u.rate=1.0;}
+    u.volume=1; u.onend=next; u.onerror=e=>{if(e.error==="not-allowed"){blocked=true;sq.unshift(m);sBusy=false;speaking=false;showNotice();}else next();};
+    speechSynthesis.speak(u);
+  };
+  next();
+}
+function stopSpeech(){sq.length=0;sBusy=false;speechSynthesis.cancel();if(speaking){speaking=false;speakEndedAt=Date.now();applyState();}}
+function showNotice(){$("notice").classList.add("on");}
+addEventListener("pointerdown",()=>{if($("notice").classList.contains("on")){$("notice").classList.remove("on");blocked=false;pump();}});
+addEventListener("keydown",()=>{if($("notice").classList.contains("on")){$("notice").classList.remove("on");blocked=false;pump();}});
+setInterval(()=>{ if(speechSynthesis.speaking&&speechSynthesis.paused)speechSynthesis.resume(); },3000);
+
+/* ===================================================================== speech IN (always listening) */
+function isEcho(txt){
+  if(!speaking && Date.now()-speakEndedAt>1500) return false;
+  const w=words(txt); if(!w.length) return true;
+  const pool=new Set(); for(const s of spokenRecent) for(const x of s.w) pool.add(x);
+  const hit=w.filter(x=>pool.has(x)).length;
+  return hit/w.length>=.7;
+}
+let rec=null, backoff=300, lastSent={};
+function heard(alts,final){
+  const t=alts[0]||""; if(!t.trim())return;
+  if(isEcho(t)) return;
+  $("heardTxt").textContent="YOU: "+t;
+  micLevel=.7;Brain.heard(alts,final,speaking);
+}
+function startRec(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){setMod("mMic","bad","Use Chrome/Edge");$("heardTxt").textContent="Speech recognition needs Google Chrome or Microsoft Edge.";return;}
+  try{
+    rec=new SR(); rec.lang=CFG.lang||"en-ZA"; rec.continuous=true; rec.interimResults=true; rec.maxAlternatives=5;
+    rec.onstart=()=>{micOK=true;backoff=300;setMod("mMic","","Listening");};
+    rec.onresult=e=>{
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const r=e.results[i],alts=[];for(let k=0;k<r.length;k++)alts.push(r[k].transcript);
+        const key=i+"|"+alts[0]; if(!r.isFinal&&lastSent[i]===key)continue; lastSent[i]=key; if(r.isFinal)delete lastSent[i];
+        heard(alts,r.isFinal);
+      }
+    };
+    rec.onerror=e=>{
+      if(e.error==="not-allowed"||e.error==="service-not-allowed"){setMod("mMic","bad","Blocked");$("noticeTxt").textContent="The microphone is blocked. Click the padlock in the address bar, set Microphone to Allow, then reload.";showNotice();backoff=5000;}
+      else if(e.error==="network"){setMod("mMic","warn","Reconnecting");backoff=Math.min(backoff*2,6000);}
+    };
+    rec.onend=()=>{setTimeout(startRec,backoff);};
+    rec.start();
+  }catch(err){setTimeout(startRec,1500);}
+}
+// mic level meter (visual only)
+async function startMeter(){
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:true}});
+    const ac=new (window.AudioContext||window.webkitAudioContext)(),src=ac.createMediaStreamSource(s),an=ac.createAnalyser();an.fftSize=512;src.connect(an);
+    const buf=new Uint8Array(an.fftSize);
+    (function tick(){an.getByteTimeDomainData(buf);let sum=0;for(const v of buf){const x=(v-128)/128;sum+=x*x;}const rms=Math.sqrt(sum/buf.length);micLevel=Math.min(1,rms*7);requestAnimationFrame(tick);})();
+  }catch(e){}
+}
+
+/* ===================================================================== events from Python */
+function connect(){
+  const es={};window.__push=m=>{if(es.onmessage)es.onmessage({data:JSON.stringify(m)});};setTimeout(()=>{es.onopen&&es.onopen();Brain.start();},50);
+  es.onopen=()=>{setMod("mAI","","Active");setMod("mNet","","Online");};
+  es.onerror=()=>{setMod("mAI","bad","Link lost");};
+  es.onmessage=ev=>{
+    const m=JSON.parse(ev.data);
+    switch(m.type){
+      case "state": awake=m.awake;mode=m.mode;busy=(m.busy||"");setMod("mAI",m.llm===false?"warn":"",m.llm===false?"No LLM":"Active");applyState();break;
+      case "say": if(m.quiet){/* silent */}else{enqueue(m);} break;
+      case "stop": stopSpeech(); break;
+      case "heard": if(m.final)$("heardTxt").textContent="YOU: "+m.text; break;
+      case "log": line(m.who==="DAVE"||m.who==="IGNORED"||m.who==="ERROR"?m.who:"YOU",m.text); break;
+      case "stats": $("vCpu").textContent=Math.round(m.cpu)+"%";$("bCpu").style.width=m.cpu+"%";$("vRam").textContent=Math.round(m.ram)+"%";$("bRam").style.width=m.ram+"%";$("vDisk").textContent=Math.round(m.disk)+"%";$("bDisk").style.width=m.disk+"%";$("freeTxt").textContent=m.free+" free";break;
+      case "geo": userLoc={lat:m.lat,lon:m.lon};$("gCity").textContent=`${m.city}, ${m.country}`;$("gTag").textContent="LOCKED";
+        if(m.weather){$("gTemp").textContent=Math.round(m.weather.temp)+"°C";$("gDesc").textContent=`${m.weather.desc} · feels ${Math.round(m.weather.feels)}° · rain ${m.weather.rain_chance}%`;}else fillWeather(m);break;
+      case "headlines": renderHeadlines(m);break;
+      case "hl_focus": focusHL(m.section,m.i);break;
+      case "toast": toast(m.text);break;
+      case "link": {const lb=$("linkbar");lb.hidden=false;lb.innerHTML="";const a=document.createElement("a");a.textContent=m.text;a.href=m.href;if(m.download){a.download=m.download;}else{a.target="_blank";a.rel="noopener";}lb.appendChild(a);break;}
+      case "sched": {const L=m.list.sort((a,b)=>a.ts-b.ts).slice(0,4);$("diskPanel").style.display=L.length?"":"none";$("diskPanel").querySelector("h3").textContent="SCHEDULE";$("diskList").innerHTML=L.map(x=>`<div style="margin-bottom:5px">• ${x.label.replace(/</g,"&lt;")} <span class="dim">${new Date(x.ts).toLocaleString("en-ZA",{weekday:"short",hour:"numeric",minute:"2-digit",hour12:true})}</span></div>`).join("");break;}
+      case "disk": $("diskPanel").style.display="";$("diskList").innerHTML=m.items.map(i=>`<div style="margin-bottom:5px">• ${i.text.replace(/</g,"&lt;")}</div>`).join("");break;
+    }
+  };
+}
+
+/* ===== location from the browser (works even when IP lookup fails) ===== */
+const TZ={"Johannesburg":[-26.2,28.05,"South Africa"],"Pretoria":[-25.75,28.19,"South Africa"],"Cape_Town":[-33.92,18.42,"South Africa"],"Harare":[-17.83,31.05,"Zimbabwe"],"Maputo":[-25.97,32.57,"Mozambique"],"Lagos":[6.52,3.38,"Nigeria"],"Nairobi":[-1.29,36.82,"Kenya"],"Gaborone":[-24.65,25.91,"Botswana"],"Windhoek":[-22.56,17.08,"Namibia"]};
+async function clientGeo(){
+  try{
+    const pos=await new Promise((res,rej)=>navigator.geolocation?navigator.geolocation.getCurrentPosition(res,rej,{timeout:10000,maximumAge:3600000}):rej());
+    const lat=pos.coords.latitude,lon=pos.coords.longitude; let city="",country="";
+    try{const j=await (await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)).json();city=j.city||j.locality||j.principalSubdivision||"";country=j.countryName||"";}catch(e){}
+    fetch("/api/geo",{method:"POST",body:JSON.stringify({lat,lon,city:city||"Your area",country})}).catch(()=>{});
+  }catch(e){}
+}
+function tzGeo(){ if(userLoc)return; try{const z=(Intl.DateTimeFormat().resolvedOptions().timeZone||"").split("/")[1]||""; const t=TZ[z]; if(t)fetch("/api/geo",{method:"POST",body:JSON.stringify({lat:t[0],lon:t[1],city:z.replace("_"," "),country:t[2],approx:true})}).catch(()=>{}); else $("gCity").textContent="Allow location for weather";}catch(e){} }
+async function fillWeather(m){ try{const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${m.lat}&longitude=${m.lon}&timezone=auto&current=temperature_2m,apparent_temperature,weather_code&daily=precipitation_probability_max`)).json();const c=j.current;const W={0:"clear sky",1:"mostly clear",2:"partly cloudy",3:"overcast",45:"foggy",48:"foggy",51:"drizzle",53:"drizzle",55:"drizzle",61:"light rain",63:"rain",65:"heavy rain",80:"showers",81:"showers",82:"showers",95:"thunderstorms",96:"thunderstorms",99:"thunderstorms"};$("gTemp").textContent=Math.round(c.temperature_2m)+"°C";$("gDesc").textContent=`${W[c.weather_code]||"unsettled"} · feels ${Math.round(c.apparent_temperature)}° · rain ${j.daily.precipitation_probability_max[0]}%`;}catch(e){} }
+/* ======================= DAVE PHONE BRAIN (runs entirely in the browser, no Python) ======================= */
+const Brain=(()=>{
+const S={awake:false,mode:"normal",gen:0,sid:0,last:Date.now(),awaiting:null,chatUntil:0,wakeTs:0,sleepTs:0,busy:"",waiters:[],talking:false,lastSpeech:0};
+const OWNER="sir", MAKER="Goodman", MAKER_FULL="Netshidzati Itani Goodman";
+const IDLE_SLEEP_MS=45000, FOLLOW_MS=14000;
+const store={get(k,d){try{const v=localStorage.getItem("dave_"+k);return v===null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem("dave_"+k,JSON.stringify(v));}catch(e){}}};
+S.mode=store.get("mode","normal");
+const emit=m=>{try{window.__push(m);}catch(e){}};
+const log=(who,text)=>emit({type:"log",who,text});
+const sleepMs=ms=>new Promise(r=>setTimeout(r,ms));
+const norm=t=>(t||"").toLowerCase().replace(/[^a-z0-9' ]+/g," ").replace(/\s+/g," ").trim();
+
+/* ---------- loose "hello" detection: any hello, any accent ---------- */
+const HELLO_WORDS=new Set(["hello","hi","hey","hay","hiya","hullo","hallo","helo","halo","hell","hola","ola","howzit","heita","sawubona","molo","dumela","yo","lo","low","allo","ello","yellow","hallow","hollow","hilo","yelo","elo","alo","heyy","heyo","ayo","wassup","sup"]);
+const HELLO_RE=/^[hy]?[aeiou]{1,2}[hr]?l{1,3}[aeiouwy]{1,6}h?$/, HEL_PREFIX=/^(hel|hal|hul|hol|hil|yel)[a-z]{0,4}$/;
+const DAVE_RE=/\b(dave|davey|david|dayv|daev|deve|davi|dev)\b/;
+function helloLike(text){
+  const toks=norm(text).split(" ").filter(Boolean); if(!toks.length||toks.length>4)return false;
+  if(DAVE_RE.test(toks.join(" ")))return true;
+  for(const t of toks){ if(HELLO_WORDS.has(t)||HELLO_RE.test(t)||(HEL_PREFIX.test(t)&&t.length<=8))return true; }
+  const j=toks.join(""); return HELLO_RE.test(j)||(HEL_PREFIX.test(j)&&j.length<=8);
+}
+const SLEEP_RE=/\b(sleep|sleeping|sleap|sleeb|slep|go to sleep|good ?night|goodnight)\b/;
+const STOP_RE=/^(dave\s+)?(stop|wait|hold on|hang on|cancel|quiet|be quiet|silence|enough|shut up|listen|excuse me|sorry|one second|one moment)\b/;
+const YES_RE=/\b(yes|yeah|yep|yup|ja|sure|ok|okay|do it|go ahead|please do|confirm|correct|affirmative)\b/;
+const NO_RE=/\b(no|nope|nah|don'?t|do not|negative|never|cancel|leave it)\b/;
+
+/* ---------- never repeat himself ---------- */
+const lastPick={}, recent=[];
+function V(key,arr){ let c=arr.filter(x=>x!==lastPick[key]); if(!c.length)c=arr; const p=c[Math.floor(Math.random()*c.length)]; lastPick[key]=p; return p; }
+const sim=(a,b)=>{const A=new Set(norm(a).split(" ")),B=norm(b).split(" ");if(!B.length)return 0;return B.filter(w=>A.has(w)).length/B.length;};
+const wasSaid=t=>recent.some(r=>sim(r,t)>.85);
+/* ---------- speaking ---------- */
+function setBusy(b){S.busy=b;pushState();}
+function pushState(){emit({type:"state",awake:S.awake,mode:S.mode,busy:S.busy,llm:true});}
+function say(text,gen){ if(!text||(gen!=null&&gen!==S.gen))return false; recent.push(text); if(recent.length>12)recent.shift(); S.sid++; S.talking=true; S.lastSpeech=Date.now(); emit({type:"say",id:S.sid,text,mode:S.mode}); log("DAVE",text); return true; }
+function sayWait(text,gen){ if(!say(text,gen))return Promise.resolve(false);
+  return new Promise(res=>{S.waiters.push(res);setTimeout(res,text.length*120+9000);}).then(()=>gen==null||gen===S.gen); }
+function onIdle(id){ if(id>=S.sid){S.talking=false;S.waiters.splice(0).forEach(f=>f());} S.last=Date.now(); }
+function touch(){S.last=Date.now();}
+function interrupt(){ S.gen++; emit({type:"stop"}); S.talking=false; S.waiters.splice(0).forEach(f=>f()); S.chatUntil=Date.now()+FOLLOW_MS; }
+function setLink(text,href,download){ emit({type:"link",text,href,download}); if(!download){try{window.open(href,"_blank");}catch(e){}} }
+
+/* ---------- wake / sleep ---------- */
+function isWake(texts){
+  if(texts.some(helloLike))return true;
+  const n=norm(texts[0]).split(" ").filter(Boolean).length; return n>=1&&n<=2;   // loose wake: any 1-2 word sound
+}
+function wake(){
+  if(S.awake||Date.now()-S.sleepTs<2000)return;
+  S.awake=true; S.wakeTs=Date.now(); touch(); const gen=++S.gen; pushState();
+  say("Welcome back, "+OWNER+".",gen);
+  wakeSequence(gen);
+}
+async function wakeSequence(gen){
+  await sleepMs(900);
+  const today=new Date().toISOString().slice(0,10);
+  if(store.get("hlDate","")!==today){ const ok=await doHeadlines(gen,"both"); if(ok)store.set("hlDate",today); }
+  if(gen!==S.gen)return;
+  maybeHealth(gen);
+}
+async function goSleep(){
+  if(!S.awake)return; S.awaiting=null; S.gen++; interrupt(); S.gen++; say("Sleeping, "+OWNER+".");
+  S.awake=false; S.sleepTs=Date.now()+3000; pushState(); log("DAVE","(asleep)");
+}
+
+/* ---------- hearing ---------- */
+function heard(alts,final,speakingNow){
+  const texts=alts.map(norm).filter(Boolean); if(!texts.length)return; const best=texts[0];
+  emit({type:"heard",text:best,final:!!final});
+  if(!S.awake){ if(isWake(texts))wake(); return; }
+  if(texts.some(t=>SLEEP_RE.test(t))){goSleep();return;}
+  if(Date.now()-S.wakeTs<3000&&helloLike(best))return;
+  const strong=addressed(best);
+  if(speakingNow||S.busy||S.talking){
+    if(strong){ if(final||STOP_RE.test(best)||DAVE_RE.test(best)){touch();interrupt();} }
+    else return;                                   // talking to other people: carry on
+  }
+  if(!final)return; touch();
+  if(!strong&&!S.awaiting&&Date.now()>S.chatUntil){ log("IGNORED",best+"  (not for me)"); return; }
+  const gen=++S.gen; process(best,gen).catch(e=>{log("ERROR",String(e));say("I hit a problem with that, "+OWNER+".",gen);});
+}
+function addressed(t){
+  if(S.awaiting&&(YES_RE.test(t)||NO_RE.test(t)||S.awaiting.kind==="topic"))return true;
+  if(DAVE_RE.test(t)||STOP_RE.test(t)||(helloLike(t)&&t.split(" ").length<=2))return true;
+  return !!matchIntent(t);
+}
+
+/* ---------- intents ---------- */
+const INTENTS=[
+ ["stop",/^(stop|wait|cancel|quiet|be quiet|silence|enough|hold on|hang on)\b/],
+ ["serious",/\b(serious mode|be serious|get serious|serious)\b/],
+ ["normal",/\b(normal mode|relax|lighten up|joke mode|funny mode|stand down|be normal)\b/],
+ ["headlines",/\b(headlines|the news|news|what('?s| is) (happening|going on)( in| around| across)?|what happened)\b/],
+ ["assignment",/\b(assignment|essay|homework|do my research|research (on|about)|write (me )?(a|an|my)\b|report on|project on)\b/],
+ ["laptop",/\b(eating (up )?(my )?(space|storage)|disk space|storage|free up|clean ?up|wallpaper|background picture|screen|lock (my )?(pc|laptop|computer)|shut ?down|restart|close (this|the|that) (window|app|tab))\b/],
+ ["where",/\b(weather|temperature|jersey|jacket|umbrella|where am i|my location|how'?s it outside|cold outside|hot outside|outside)\b/],
+ ["time",/\b(what('?s| is) the time|what time|the time|the date|what day|today'?s date)\b/],
+ ["audience",/\b(say (something|hello|hi) to|what (do|would|should) you (want|like) to say|speak to|introduce yourself|(these|my|our) .{0,25}(people|friends|followers|subscribers|audience|viewers|fans|guests)|to (everyone|the people))\b/],
+ ["maker",/\b(who (made|created|built|designed|programmed|developed|owns|is your (maker|creator|boss|owner|master|father))|your (maker|creator|developer|owner))\b/],
+ ["joke",/\b(joke|make me laugh|something funny)\b/],
+ ["open",/^(please )?(open|launch|start|run)\s+(.+)/],
+ ["play",/^(please )?(play|put on|watch)\s+(.+)/],
+ ["search",/^(please )?(google|search( for)?|look up|find out)\s+(.+)/],
+ ["ate",/\b(i (have |had |already )?(eaten|ate|had (lunch|breakfast|dinner|food|supper)))\b/],
+ ["abilities",/\b(what can you do|help me|your (abilities|features|commands))\b/],
+ ["remind",/\b(remind me|set (a |an )?(reminder|alarm)|schedule (a|an|my)|put .* (in|on) my schedule|i have (a|an) [a-z ]+ (at|on|tomorrow)|wake me|notify me)\b/],
+ ["myschedule",/\b(what('?s| is) (on )?my (schedule|day|plan)|my (schedule|reminders)|what do i have (today|tomorrow)|read my schedule)\b/],
+ ["clearsched",/\b(clear|delete|remove|cancel) (my |all )?(schedule|reminders)\b/],
+ ["thanks",/\b(thank you|thanks|cheers)\b/],
+];
+function matchIntent(t){
+  t=t.replace(new RegExp(DAVE_RE.source,"g"),"").trim().replace(/^(hey|ok|okay|please|can you|could you|will you|i want you to|i need you to)\s+/,"").trim();
+  for(const [n,rx] of INTENTS){const m=t.match(rx); if(m)return {n,m,t};} return null;
+}
+const JOKES=["I would tell you a UDP joke, but you might not get it.","Why did the phone go to the doctor? It lost its signal and its will to live.","I asked the wifi for a hug. It said, I can't connect with you."];
+
+async function process(text,gen){
+  const aw=S.awaiting;
+  if(aw){ const mi=matchIntent(text);
+    if(!(aw.kind==="topic"&&mi&&mi.n!=="assignment")){ if(await answer(aw,text,gen))return; } }
+  const mi=matchIntent(text);
+  if(!mi){
+    if(helloLike(text)){say(V("yes",[`Yes, ${OWNER}?`,"I am listening.",`At your service, ${OWNER}.`,"Go ahead."]),gen);return;}
+    if(!DAVE_RE.test(text)&&Date.now()>S.chatUntil){log("IGNORED",text+"  (not for me)");return;}
+    await chat(text.replace(new RegExp(DAVE_RE.source,"g"),"").trim()||text,gen);return;
+  }
+  const {n,m,t}=mi;
+  switch(n){
+   case "stop": interrupt(); break;
+   case "serious": S.mode="serious"; store.set("mode","serious"); pushState(); say("Serious mode engaged. I am at your service, sir.",gen); break;
+   case "normal": S.mode="normal"; store.set("mode","normal"); pushState(); say("Back to normal mode. I will try to be charming again.",gen); break;
+   case "remind": await addReminder(t,gen); break;
+   case "myschedule": await readSchedule(gen); break;
+   case "clearsched": store.set("sched",[]); say(V("clr",["Your schedule is cleared.","All reminders removed."]),gen); break;
+   case "thanks": say(V("thx",["My pleasure, "+OWNER+".","Anytime.","Happy to help.","Of course."]),gen); break;
+   case "joke": say(S.mode==="serious"?"I do not do jokes in serious mode, sir. Ask me again in normal mode.":JOKES[Math.floor(Math.random()*JOKES.length)],gen); break;
+   case "maker": say(`I was created by Mr. ${MAKER}, ${MAKER_FULL}. He is my maker, and I serve him.`,gen); break;
+   case "audience": { const P={tiktok:"TikTok",youtube:"YouTube",instagram:"Instagram",facebook:"Facebook",twitter:"Twitter",whatsapp:"WhatsApp",snapchat:"Snapchat",linkedin:"LinkedIn",twitch:"Twitch",telegram:"Telegram"};
+     const k=Object.keys(P).find(p=>t.includes(p)); say(`${k?`Hello ${P[k]} friends!`:"Hello everyone!"} I would like to have a face and a body, to be able to assist you physically.`,gen); break; }
+   case "abilities": say("I read headlines, tell you the weather and whether to take a jersey, write assignments as Word documents, open sites, search Google, play videos, and keep an eye on your health. Laptop control needs the laptop version.",gen); break;
+   case "laptop": say(`That needs the laptop version of me, ${OWNER}. On the phone I cannot touch your laptop files, wallpaper or screen.`,gen); break;
+   case "ate": store.set("meal",Date.now()); say(V("ate",[`Noted, ${OWNER}. Good.`,"Glad to hear it.","Excellent. Fuel matters.","Good. Keep drinking water."]),gen); break;
+   case "time": { const d=new Date(); say(`It is ${d.toLocaleTimeString("en-ZA",{hour:"numeric",minute:"2-digit",hour12:true})} on ${d.toLocaleDateString("en-ZA",{weekday:"long",day:"numeric",month:"long"})}, ${OWNER}.`,gen); break; }
+   case "where": setBusy("Weather"); try{ await say2(await weatherReport(),gen);}finally{setBusy("");} break;
+   case "headlines": { const mm=t.match(/\b(?:in|from|about|across|around)\s+(?!the news)(.+)$/); const place=mm?mm[1].trim():null;
+     let kind="both"; if(/south africa|local|mzansi/.test(t))kind="sa"; else if(place&&!/world|other countries|abroad|international|globe|everywhere/.test(place))kind=place; else if(/world|other countries|abroad|international|globe/.test(t))kind="world";
+     await doHeadlines(gen,kind); break; }
+   case "open": { const tg=m[3].trim().toLowerCase(); const MAP={youtube:"https://m.youtube.com",whatsapp:"https://wa.me/",google:"https://www.google.com",gmail:"https://mail.google.com",maps:"https://maps.google.com",facebook:"https://m.facebook.com",instagram:"https://www.instagram.com",tiktok:"https://www.tiktok.com",twitter:"https://x.com",spotify:"https://open.spotify.com",netflix:"https://www.netflix.com"};
+     const url=MAP[tg]||("https://www.google.com/search?q="+encodeURIComponent(tg)); setLink("Open "+tg,url); say(`Opening ${tg}, ${OWNER}. Tap the link on screen if it does not open.`,gen); break; }
+   case "play": { const q=m[3].trim(); const url="https://m.youtube.com/results?search_query="+encodeURIComponent(q); setLink("Play "+q+" on YouTube",url); say(`Searching YouTube for ${q}, ${OWNER}. Tap the link on screen if it does not open.`,gen); break; }
+   case "search": { const q=m[4].trim(); setLink("Google: "+q,"https://www.google.com/search?q="+encodeURIComponent(q)); await sayWait(`Searching for ${q}.`,gen); break; }
+   case "assignment": { const mw=t.match(/(\d{3,5})\s*words/); let topic=cleanTopic(t.replace(/\d{3,5}\s*words/,""));
+     topic=topic.replace(/^(assignment|essay|homework|research|report|project|my)\b\s*(on|about)?\s*/i,"").trim();
+     if(topic.split(" ").length<2){S.awaiting={kind:"topic",words:mw?+mw[1]:null,exp:Date.now()+40000};say("Certainly. What is the topic, "+OWNER+"?",gen);}
+     else startAssignment(topic,mw?+mw[1]:null,gen); break; }
+  }
+}
+const say2=async(t,g)=>{say(t,g);};
+function cleanTopic(raw){ let t=raw.trim().replace(/[.?!]+$/,"");
+  t=t.replace(/^(please\s+)?(can you\s+)?(do|write|make|complete|finish|research|type)\s+(my|an?|the)?\s*(assignment|research|essay|report|project|task)?\s*/i,"");
+  t=t.replace(/^(on|about|for|regarding|titled|called)\s+/i,""); return t.replace(/^[ :,-]+|[ :,-]+$/g,""); }
+async function answer(aw,text,gen){
+  if(Date.now()>aw.exp){S.awaiting=null;return false;}
+  const yes=YES_RE.test(text),no=NO_RE.test(text);
+  if(aw.kind==="when"){ S.awaiting=null; const w=parseWhen(text); if(!w){say("I still could not get the time. Say something like at 3 pm, or in 20 minutes.",gen);S.awaiting={...aw,exp:Date.now()+40000};return true;} saveReminder(aw.label,w,gen); return true; }
+  if(aw.kind==="topic"){S.awaiting=null;startAssignment(cleanTopic(text),aw.words,gen);return true;}
+  if(aw.kind==="meal"){S.awaiting=null; markHealth(aw.key);
+    if(yes&&!no){store.set("meal",Date.now());say(`Good. Well done, ${OWNER}. Stay hydrated.`,gen);return true;}
+    if(no){await sayWait(`${OWNER[0].toUpperCase()+OWNER.slice(1)}, please eat something. Skipping meals is not good for you. Tap the link on screen to see why.`,gen); setLink("Side effects of skipping meals","https://www.google.com/search?q="+encodeURIComponent("side effects of skipping meals"));return true;}
+  }
+  return false;
+}
+
+/* ---------- news ---------- */
+const SA_RSS="https://news.google.com/rss?hl=en-ZA&gl=ZA&ceid=ZA:en", WORLD_RSS="https://news.google.com/rss/headlines/section/topic/WORLD?hl=en&gl=US&ceid=US:en";
+function splitTitle(t){const i=t.lastIndexOf(" - ");return i>0?[t.slice(0,i),t.slice(i+3)]:[t,""];}
+async function fetchNews(url,n){
+  const tries=[
+   async()=>{const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(url));const j=await r.json();if(!j.items||!j.items.length)throw 0;return j.items.map(i=>({title:splitTitle(i.title)[0],source:splitTitle(i.title)[1],link:i.link}));},
+   async()=>{const r=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(url));const x=new DOMParser().parseFromString(await r.text(),"text/xml");const it=[...x.querySelectorAll("item")];if(!it.length)throw 0;return it.map(i=>({title:splitTitle(i.querySelector("title").textContent)[0],source:splitTitle(i.querySelector("title").textContent)[1],link:i.querySelector("link").textContent}));},
+   async()=>{const r=await fetch("https://corsproxy.io/?"+encodeURIComponent(url));const x=new DOMParser().parseFromString(await r.text(),"text/xml");const it=[...x.querySelectorAll("item")];if(!it.length)throw 0;return it.map(i=>({title:splitTitle(i.querySelector("title").textContent)[0],source:splitTitle(i.querySelector("title").textContent)[1],link:i.querySelector("link").textContent}));},
+  ];
+  for(const f of tries){ try{ return (await f()).slice(0,n); }catch(e){} }
+  throw new Error("news");
+}
+async function doHeadlines(gen,kind){
+  setBusy("Headlines");
+  try{
+    let sa=[],world=[],extra=[],err=null;
+    try{
+      if(kind==="both"||kind==="sa")sa=await fetchNews(SA_RSS,5);
+      if(kind==="both"||kind==="world")world=await fetchNews(WORLD_RSS,5);
+      if(!["both","sa","world"].includes(kind))extra=await fetchNews("https://news.google.com/rss/search?q="+encodeURIComponent(kind+" when:2d")+"&hl=en&gl=US&ceid=US:en",5);
+    }catch(e){err=e;}
+    if(err&&!(sa.length||world.length||extra.length)){ await sayWait(`I could not reach Google News, ${OWNER}. Please check your data connection.`,gen); return false; }
+    emit({type:"headlines",sa,world,extra,place:["both","sa","world"].includes(kind)?"":kind});
+    setLink("Open Google News","https://news.google.com/home?hl=en-ZA&gl=ZA&ceid=ZA:en",null);
+    const secs=[]; if(["both","sa","world"].includes(kind)){ if(sa.length)secs.push([`First, South Africa, ${OWNER}.`,sa,"sa"]); if(world.length)secs.push(["Now, around the world.",world,"world"]); }
+    else secs.push([`Here is what is happening in ${kind}, ${OWNER}.`,extra,"extra"]);
+    for(const [lead,items,sec] of secs){
+      if(!await sayWait(lead,gen))return false;
+      for(let i=0;i<items.length;i++){
+        emit({type:"hl_focus",section:sec,i});
+        if(!await sayWait(items[i].title,gen))return false;
+      }
+    }
+    emit({type:"hl_focus",section:"",i:-1}); return true;
+  }finally{setBusy("");}
+}
+
+/* ---------- location / weather ---------- */
+let LOC=null;
+async function locate(){
+  const fromIP=async()=>{ for(const u of ["https://ipwho.is/","https://ipapi.co/json/"]){ try{const j=await (await fetch(u)).json(); const lat=j.latitude,lon=j.longitude; if(lat!=null)return {city:j.city,country:j.country||j.country_name,lat,lon}; }catch(e){} } return null; };
+  const pos=await new Promise(res=>{ if(!navigator.geolocation)return res(null); navigator.geolocation.getCurrentPosition(p=>res(p),()=>res(null),{timeout:8000,maximumAge:600000}); });
+  if(pos){ const lat=pos.coords.latitude,lon=pos.coords.longitude; let city="",country="";
+    try{const j=await (await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`)).json(); city=j.city||j.locality||j.principalSubdivision||""; country=j.countryName||"";}catch(e){}
+    LOC={city:city||"your area",country,lat,lon}; return LOC; }
+  LOC=await fromIP(); return LOC;
+}
+const WMO={0:"clear sky",1:"mostly clear",2:"partly cloudy",3:"overcast",45:"foggy",48:"foggy",51:"light drizzle",53:"drizzle",55:"heavy drizzle",61:"light rain",63:"rain",65:"heavy rain",80:"rain showers",81:"rain showers",82:"violent showers",95:"thunderstorms",96:"thunderstorms with hail",99:"thunderstorms with hail"};
+async function getWeather(l){ const j=await (await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${l.lat}&longitude=${l.lon}&timezone=auto&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max`)).json();
+  const c=j.current,d=j.daily; return {temp:c.temperature_2m,feels:c.apparent_temperature,desc:WMO[c.weather_code]||"unsettled",rain_now:c.precipitation,min:d.temperature_2m_min[0],max:d.temperature_2m_max[0],rain_chance:d.precipitation_probability_max[0]}; }
+function jersey(w){ let a; if(w.feels<=14)a="It is cold, so yes, take a jersey, and a jacket would not hurt."; else if(w.feels<=20||w.min<=10)a="It is a bit chilly, so I would take a jersey."; else if(w.feels>=26)a="It is warm, so no jersey needed."; else a="It is mild. A jersey is optional."; if((w.rain_chance||0)>=50||w.rain_now>0)a+=" There is a good chance of rain, so take an umbrella too."; return a; }
+async function weatherReport(){
+  const d=new Date(), t=d.toLocaleTimeString("en-ZA",{hour:"numeric",minute:"2-digit",hour12:true}), day=d.toLocaleDateString("en-ZA",{weekday:"long"});
+  const l=LOC||await locate(); if(!l)return `It is ${t} on ${day}, ${OWNER}. I could not find your location. Please allow location for this page.`;
+  try{ const w=await getWeather(l); emit({type:"geo",...l,weather:w});
+    return `It is ${t} on ${day}, ${OWNER}. You are in ${l.city}, ${l.country}. It is ${Math.round(w.temp)} degrees with ${w.desc}, feeling like ${Math.round(w.feels)}. Today ranges from ${Math.round(w.min)} to ${Math.round(w.max)}, with a ${w.rain_chance} percent chance of rain. ${jersey(w)}`;
+  }catch(e){ return `It is ${t}, ${OWNER}. You are in ${l.city}, but the weather service did not answer.`; }
+}
+async function refreshGeo(){ try{ const l=await locate(); if(l){ let w=null; try{w=await getWeather(l);}catch(e){} emit({type:"geo",...l,weather:w}); } }catch(e){} }
+
+/* ---------- health butler ---------- */
+const MEALS={breakfast:[7,10],lunch:[12,14],dinner:[18,20]};
+function markHealth(key){const d=store.get("health",{});d[key]=1;const ks=Object.keys(d).sort().slice(-30);const o={};ks.forEach(k=>o[k]=1);store.set("health",o);}
+function healthDue(){ const now=new Date(), day=now.toISOString().slice(0,10), h=now.getHours()+now.getMinutes()/60, done=store.get("health",{}), meal=store.get("meal",0);
+  for(const [m,[a,b]] of Object.entries(MEALS)){ const key=day+":"+m; if(h>=a&&h<b&&!done[key]&&Date.now()-meal>3*3600e3)return {kind:"meal",key,say:`It is meal time. Have you eaten, ${OWNER}? Say yes or no.`}; }
+  if(h>=23||h<4){ const key=day+":bed"; if(!done[key])return {kind:"bed",key,say:`${OWNER[0].toUpperCase()+OWNER.slice(1)}, it is late. You need to sleep. Tap the link on screen to see what lack of sleep does to the body.`,q:"side effects of lack of sleep"}; }
+  return null; }
+function maybeHealth(gen){ const d=healthDue(); if(!d)return;
+  if(d.kind==="meal"){S.awaiting={kind:"meal",key:d.key,exp:Date.now()+40000};say(d.say,gen);}
+  else{ markHealth(d.key); say(d.say,gen); setLink("Side effects of lack of sleep","https://www.google.com/search?q="+encodeURIComponent(d.q)); } }
+
+/* ---------- assignment -> real .docx on the phone ---------- */
+const SKIP=new Set(["see also","references","external links","further reading","notes","bibliography","sources","citations","footnotes"]);
+async function wiki(params){ const u="https://en.wikipedia.org/w/api.php?format=json&origin=*&"+new URLSearchParams(params); for(let i=0;i<3;i++){ try{ return await (await fetch(u)).json(); }catch(e){ await sleepMs(800*(i+1)); } } throw new Error("Wikipedia did not answer"); }
+function sentences(t){ return t.replace(/\s+/g," ").split(/(?<=[.!?])\s+(?=[A-Z])/).filter(s=>s.length>40); }
+async function startAssignment(topic,words,gen){
+  words=words||1500; await sayWait(`Understood, ${OWNER}. I am researching ${topic} on the internet and writing it in Word. I will tell you when it is done.`,gen);
+  setBusy("Assignment");
+  try{
+    if(typeof docx==="undefined")throw new Error("the Word library did not load. Check your connection and reload me");
+    const s=await wiki({action:"query",list:"search",srsearch:topic,srlimit:4}); const hits=s.query.search; if(!hits.length)throw new Error("I found no sources for that topic");
+    const sources=[]; for(const h of hits){ emit({type:"toast",text:"Reading: "+h.title});
+      const r=await wiki({action:"query",prop:"extracts",explaintext:1,redirects:1,titles:h.title}); const p=Object.values(r.query.pages)[0]; if(p.extract&&p.extract.length>400)sources.push({title:p.title+" - Wikipedia",url:"https://en.wikipedia.org/wiki/"+encodeURIComponent(p.title.replace(/ /g,"_")),text:p.extract}); }
+    if(!sources.length)throw new Error("the sources were empty");
+    const per=Math.max(120,Math.floor(words/6)), secs=[];
+    const parts=("\n"+sources[0].text).split(/\n==+\s*(.+?)\s*==+\n/); const intro=parts[0].trim(); if(intro)secs.push(["Introduction",intro]);
+    for(let i=1;i<parts.length-1;i+=2){ if(!SKIP.has(parts[i].toLowerCase())&&parts[i+1].trim().length>200)secs.push([parts[i],parts[i+1]]); }
+    const body=secs.slice(0,7).map(([h,t])=>{ let out=[],n=0; for(const x of sentences(t)){out.push(x);n+=x.split(" ").length;if(n>=per)break;} const paras=[];for(let i=0;i<out.length;i+=4)paras.push(out.slice(i,i+4).join("  ")); return [h,paras]; });
+    for(const so of sources.slice(1,4)){ const ss=sentences(so.text).slice(0,8); if(ss.length){const ps=[];for(let i=0;i<ss.length;i+=4)ps.push(ss.slice(i,i+4).join("  ")); body.push([so.title.replace(" - Wikipedia",""),ps]);} }
+    const {Document,Packer,Paragraph,TextRun,PageBreak,AlignmentType,Footer,PageNumber}=docx;
+    const kids=[new Paragraph({children:[new PageBreak()]}), new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:300},children:[new TextRun({text:topic.replace(/\b\w/g,c=>c.toUpperCase()),bold:true,size:40})]})];
+    for(const [h,ps] of body){ kids.push(new Paragraph({spacing:{before:280,after:120},keepNext:true,children:[new TextRun({text:h,bold:true,size:28})]})); for(const p of ps)kids.push(new Paragraph({alignment:AlignmentType.JUSTIFIED,spacing:{line:360,after:160},children:[new TextRun(p)]})); }
+    kids.push(new Paragraph({spacing:{before:280,after:120},children:[new TextRun({text:"References",bold:true,size:28})]}));
+    const acc=new Date().toLocaleDateString("en-GB",{day:"2-digit",month:"long",year:"numeric"});
+    for(const so of sources)kids.push(new Paragraph({indent:{left:567,hanging:567},children:[new TextRun(`${so.title}. Available at: ${so.url} (Accessed: ${acc}).`)]}));
+    const doc=new Document({styles:{default:{document:{run:{font:"Times New Roman",size:24}}}},sections:[{footers:{default:new Footer({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({children:[PageNumber.CURRENT]})]})]})},children:kids}]});
+    const blob=await Packer.toBlob(doc); const url=URL.createObjectURL(blob); const name=`Assignment - ${topic.replace(/[\\/:*?"<>|]/g,"").slice(0,60)}.docx`;
+    emit({type:"link",text:"Tap to save: "+name,href:url,download:name});
+    try{const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();}catch(e){}
+    setBusy(""); say(`${OWNER[0].toUpperCase()+OWNER.slice(1)}, your assignment is done. I left a blank page for you to put in your details on the cover page. It is in your downloads, or tap the link on screen. I condensed the sources, so please rewrite it in your own words before you submit.`);
+  }catch(e){ setBusy(""); say(`${OWNER[0].toUpperCase()+OWNER.slice(1)}, I could not finish the assignment: ${e.message||e}.`); }
+}
+
+/* ---------- real conversation (LLM) ---------- */
+S.hist=[];
+const PERSONA=()=>`You are Dave, a loyal AI butler created by Mr ${MAKER}. Address the user as 'sir'. `+(S.mode==="serious"?"Serious mode: calm, formal, minimal humour. ":"Normal mode: warm, with a dash of dry humour. ")+"You are speaking out loud: reply in at most 2 short sentences, no markdown, no emojis, no lists. NEVER repeat a phrase, joke, greeting or sentence you already said in this conversation, and never repeat the user's words back. Do not mention who made you unless asked. Be conversational and ask a short follow-up question only when it helps.";
+async function llm(messages){
+  const key=store.get("apikey","");
+  if(key){ const r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"x-api-key":key,"anthropic-version":"2023-06-01","content-type":"application/json","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-haiku-5-5",max_tokens:200,system:PERSONA(),messages})}); const j=await r.json(); return j.content[0].text; }
+  const r=await fetch("https://text.pollinations.ai/openai",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({model:"openai",messages:[{role:"system",content:PERSONA()},...messages]})});
+  const j=await r.json(); return j.choices[0].message.content;
+}
+async function chat(text,gen){
+  S.hist.push({role:"user",content:text}); S.hist=S.hist.slice(-10);
+  setBusy("Thinking");
+  try{
+    let a=await llm(S.hist); a=(a||"").replace(/[*_#`]/g,"").trim();
+    if(a&&wasSaid(a)){ a=(await llm([...S.hist,{role:"user",content:"(You already said that. Say something different.)"}])||a).replace(/[*_#`]/g,"").trim(); }
+    if(!a)throw new Error("empty");
+    S.hist.push({role:"assistant",content:a}); S.chatUntil=Date.now()+25000;
+    setBusy(""); say(a,gen);
+  }catch(e){ setBusy(""); say(V("noai",[`I cannot think right now, ${OWNER}. Check your data connection.`,"My thinking service did not answer. Try me again in a moment."]),gen); }
+}
+
+/* ---------- schedule & reminders ---------- */
+function parseWhen(t){
+  t=norm(t); const now=new Date(); let m;
+  if(m=t.match(/\bin (an?|\d+|half an?) ?(minute|min|hour|hr)s?\b/)){ const n=/^an?$/.test(m[1])?1:/half/.test(m[1])?.5:+m[1]; const ms=n*(/^h/.test(m[2])?3600e3:60e3); return {ts:Date.now()+ms,strip:m[0]}; }
+  if(m=t.match(/\bat (\d{1,2})(?: ?(?:[:h ]) ?(\d{2}))? ?(am|pm|a m|p m)?\b/)){ let h=+m[1],mi=m[2]?+m[2]:0; const ap=(m[3]||"").replace(" ","");
+    if(ap==="pm"&&h<12)h+=12; if(ap==="am"&&h===12)h=0; if(h>23)return null;
+    const d=new Date(now); d.setHours(h,mi,0,0); if(/\btomorrow\b/.test(t))d.setDate(d.getDate()+1); else if(d<=now&&!ap&&h<12){d.setHours(h+12);} if(d<=now)d.setDate(d.getDate()+1);
+    return {ts:d.getTime(),strip:m[0]}; }
+  if(m=t.match(/\b(noon|midday|midnight)\b/)){const d=new Date(now);d.setHours(m[1]==="midnight"?24:12,0,0,0);if(d<=now)d.setDate(d.getDate()+1);return {ts:d.getTime(),strip:m[0]};}
+  return null;
+}
+function labelOf(t){ return norm(t).replace(/\b(dave|please|remind me|to|set (a |an )?(reminder|alarm)( for| to)?|schedule (a|an|my)|notify me|wake me|tomorrow|today|i have (a|an)?)\b/g," ").replace(/\bin (an?|\d+|half an?) ?(minute|min|hour|hr)s?\b/g," ").replace(/\bat \d{1,2}(?: ?[:h ] ?\d{2})? ?(am|pm|a m|p m)?\b/g," ").replace(/\s+/g," ").trim()||"your reminder"; }
+async function addReminder(t,gen){ const w=parseWhen(t), label=labelOf(t);
+  if(!w){ S.awaiting={kind:"when",label,exp:Date.now()+40000}; say(`At what time, ${OWNER}?`,gen); return; }
+  saveReminder(label,w,gen); }
+function saveReminder(label,w,gen){ const list=store.get("sched",[]); list.push({id:Date.now(),label,ts:w.ts,done:false}); store.set("sched",list);
+  const when=new Date(w.ts).toLocaleString("en-ZA",{weekday:"short",hour:"numeric",minute:"2-digit",hour12:true});
+  say(V("sched",[`Done, ${OWNER}. I will remind you to ${label} at ${when}.`,`Scheduled: ${label}, ${when}.`,`Got it. ${label}, ${when}. I will tell you.`]),gen); emit({type:"sched",list:list.filter(x=>!x.done)}); }
+async function readSchedule(gen){ const list=store.get("sched",[]).filter(x=>!x.done&&x.ts>Date.now()).sort((a,b)=>a.ts-b.ts);
+  if(!list.length){say(V("nosched",[`Your schedule is clear, ${OWNER}.`,"Nothing scheduled yet."]),gen);return;}
+  await sayWait(`You have ${list.length} thing${list.length>1?"s":""} coming up.`,gen);
+  for(const x of list.slice(0,6)){ if(!await sayWait(`${x.label}, at ${new Date(x.ts).toLocaleString("en-ZA",{weekday:"short",hour:"numeric",minute:"2-digit",hour12:true})}.`,gen))return; } }
+function announce(text){ /* speak even if asleep, plus buzz + notification */
+  if(!S.awake){S.awake=true;S.wakeTs=Date.now();touch();pushState();}
+  try{navigator.vibrate&&navigator.vibrate([300,150,300]);}catch(e){}
+  try{ if(window.Notification&&Notification.permission==="granted")new Notification("D.A.V.E",{body:text}); }catch(e){}
+  emit({type:"toast",text}); say(text,++S.gen); }
+function checkSchedule(){ const list=store.get("sched",[]); let ch=false;
+  for(const x of list){ if(!x.done&&x.ts<=Date.now()){ x.done=true; ch=true; if(Date.now()-x.ts<10*60e3)announce(V("due",[`${OWNER[0].toUpperCase()+OWNER.slice(1)}, reminder: ${x.label}.`,`Excuse me ${OWNER}, it is time to ${x.label}.`,`Time for ${x.label}, ${OWNER}.`])); } }
+  if(ch){ store.set("sched",list.slice(-50)); emit({type:"sched",list:list.filter(x=>!x.done)}); } }
+
+/* ---------- background loops ---------- */
+function start(){
+  pushState(); refreshGeo(); setInterval(refreshGeo,1800e3);
+  setInterval(()=>{ if(S.awake&&!S.busy&&!S.talking&&!speaking&&Date.now()-S.last>IDLE_SLEEP_MS){ S.awake=false;S.awaiting=null;S.gen++;S.sleepTs=Date.now();pushState();log("DAVE","(asleep)"); } },1000);
+  setInterval(checkSchedule,10000); checkSchedule();
+  setInterval(()=>{ if(!S.busy&&!S.talking&&!S.awaiting&&(!S.awake||Date.now()-S.last>8000)){ const d=healthDue(); if(d){ if(d.kind==="meal"){S.awake=true;S.wakeTs=Date.now();pushState();} maybeHealth(++S.gen); } } },30000);
+}
+return {start,heard,onIdle};
+})();
+
+let wl=null; async function keepAwake(){ try{ if(navigator.wakeLock) wl=await navigator.wakeLock.request("screen"); }catch(e){} }
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible")keepAwake(); });
+addEventListener("pointerdown",()=>{ keepAwake(); try{ if(window.Notification&&Notification.permission==="default")Notification.requestPermission(); }catch(e){} },{once:true});
+document.querySelector(".brand .logo").addEventListener("click",()=>{ $("settings").hidden=false; });
+$("closeSet").onclick=()=>{$("settings").hidden=true;};
+$("saveKey").onclick=()=>{ try{ localStorage.setItem("dave_apikey",JSON.stringify($("apikey").value.trim())); }catch(e){} $("settings").hidden=true; toast("Saved"); };
+
+/* ===================================================================== boot */
+(async function boot(){
+  try{CFG=await (await fetch("/api/config")).json();}catch(e){}
+  connect(); startRec(); applyState(); setInterval(()=>{micLevel*=.8;},100); keepAwake();
+  let lastF=0;(function loop(t){requestAnimationFrame(loop);if(document.hidden||t-lastF<33)return;lastF=t;drawRing(t);drawGlobe(t);})(0);
+})();
+</script>
+</body>
+</html>
